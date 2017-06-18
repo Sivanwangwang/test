@@ -113,15 +113,15 @@ def main(args):
                 exon.parent = parent
                 list_exon.append(exon)                                         #
  
-    chr_gene(list_gene)
-    gene_len(list_gene)
-    gene_transcript(list_transcript)
-    gene_transcript1(list_transcript)
-    transcript_exon(list_exon)
-    exon_pos(list_exon)
+    #chr_gene(list_gene)
+    #gene_len(list_gene)
+    #gene_transcript(list_transcript)
+    #gene_transcript1(list_transcript)
+    #transcript_exon(list_exon)
+    #exon_pos(list_exon)
     #gene_exon_pos(list_gene, list_transcript, list_exon)
     gene_exon_pos1(list_gene, list_transcript, list_exon)
-    gene_exon_pos2(list_gene, list_transcript, list_exon)
+    #gene_exon_pos2(list_gene, list_transcript, list_exon)
     #gene_exon_pos3(list_gene, list_transcript, list_exon)
  
 def chr_gene(list_gene):
@@ -197,28 +197,33 @@ def gene_transcript(list_transcript):
 
 def gene_transcript1(list_transcript):
     """
-    基因的转录本数量分布
+    基因的转录本数量分布   改良版
 
     :param list_transcript:
     :return:
     """
 
     print("基因的转录本数量分布")
-    count_transcript = {}
+    count_transcript = {}             #建立一个新的字典
     for info in list_transcript.values():
         gene_id = info.parent
         name = info.name
         transcript_id = info.id
-        if gene_id in count_transcript:
-            count_transcript[gene_id][name].append(transcript_id)
+        chr = info.chr
+        chr_name =chr+"\t"+name         #将染色体和基因名合成一个键
+        #print(gene_id+name+transcript_id)
+        if gene_id not in count_transcript:     #遇到一个新的gene_id就建立一个新的字典作为第一层字典的‘健’
+            count_transcript[gene_id] = {}
+            count_transcript[gene_id][chr_name] = [transcript_id]   #并把第一个元素（transcript_id)加到列表‘值’中
         else:
-            count_transcript[gene_id][name] = []
+            count_transcript[gene_id][chr_name].append(transcript_id)  #遇到了一个新的(transcript_id)加到列表‘值’中
     with open("gene_transcript1.txt", 'w') as fp_out:
-        fp_out.write('gene_id'+'\t'+'gene_name'+'\t'+'transcript_id'+'\t'+'num')
+        fp_out.write('chr'+'\t'+'gene_name'+'\t'+'gene_id'+'\t'+'transcript_id'+'\t'+'num'+'\n')
         for gene_id, name in count_transcript.items():
-            for symbol,transcript_id in name.items():
+            for chr_name,transcript_id in name.items():
                 # print("\t".join([gene_id, str(num)]) + "\n")
-                fp_out.write("\t".join([gene_id, symbol,transcript_id,str(len(transcript_id))]) + "\n")
+                transcript_id_set = "|".join(transcript_id)
+                fp_out.write("\t".join([chr_name,gene_id,transcript_id_set,str(len(transcript_id))]) + "\n")
  
 def transcript_exon(list_exon):
     """
@@ -309,7 +314,7 @@ def gene_exon_pos(list_gene, list_transcript, list_exon):
                 fp_out.write("\t".join([gene_id, transcript_id,exon_pos]) + "\n")
 def gene_exon_pos1(list_gene, list_transcript, list_exon):
     """
-    根据exon的parent将所有exon对应到transcript
+    改良版 根据exon的parent将所有exon对应到transcript
     根据transcript的parent将所有transcript对应到gene
     根据gene按chr分组得到chromosome列表
  
@@ -351,11 +356,12 @@ def gene_exon_pos1(list_gene, list_transcript, list_exon):
             #print(k1+i)
     #print(gene_transcript_exon)        
     with open("gene_transcript_exon1.txt", 'w') as fp_out:
-        fp_out.write("Chr"+"\t"+"Gene_Symbol"+"\t"+"Type"+"\t"+"Gene_ID"+"\t"+"Transcript_ID"+"\t"+"exon_pos"+"\n")   #加个列名
+        fp_out.write("Chr"+"\t"+"Gene_Symbol"+"\t"+"Type"+"\t"+"Gene_ID"+"\t"+"Transcript_ID"+"\t"+"exon_pos"+"\t"+"exon_number"+"\n")   #加个列名
         for gene_id, transcript in gene_transcript_exon.items():
             for transcript_id, exon_pos in transcript.items():
+                exon_number=len(exon_pos.split(','))    #计算exon的个数
             #print("\t".join([transcript_id, pos]) + "\n")
-                fp_out.write("\t".join([gene_id, transcript_id,exon_pos]) + "\n")
+                fp_out.write("\t".join([gene_id, transcript_id,exon_pos,str(exon_number)]) + "\n")
 def gene_exon_pos2(list_gene, list_transcript, list_exon):
     """
     根据exon的parent将所有exon对应到transcript
