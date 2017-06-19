@@ -397,9 +397,9 @@ def gene_exon_pos1_1(list_gene, list_transcript, list_exon):
         catag = transcript.catag
         all = "\t".join([str(chr), name, catag, gene_id])
         if gene_id not in count_transcript:
-            count_transcript[gene_id] = [transcript_id]
+            count_transcript[all] = [transcript_id]
         else:
-            count_transcript[gene_id].append(transcript_id)
+            count_transcript[all].append(transcript_id)
     print("The length of count_transcript:" + str(len(count_transcript.keys())))
     # print(count_transcript)
     for k1, v1 in count_transcript.items():
