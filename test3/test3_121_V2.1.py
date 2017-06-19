@@ -113,14 +113,15 @@ def main(args):
                 exon.parent = parent
                 list_exon.append(exon)                                         #
  
-    #chr_gene(list_gene)
-    #gene_len(list_gene)
+    chr_gene(list_gene)
+    gene_len(list_gene)
     #gene_transcript(list_transcript)
-    #gene_transcript1(list_transcript)
-    #transcript_exon(list_exon)
-    #exon_pos(list_exon)
+    gene_transcript1(list_transcript)
+    #ranscript_exon(list_exon)
+    exon_pos(list_exon)
     #gene_exon_pos(list_gene, list_transcript, list_exon)
     gene_exon_pos1(list_gene, list_transcript, list_exon)
+    gene_exon_pos1_1(list_gene, list_transcript, list_exon)
     #gene_exon_pos2(list_gene, list_transcript, list_exon)
     #gene_exon_pos3(list_gene, list_transcript, list_exon)
  
@@ -336,7 +337,7 @@ def gene_exon_pos1(list_gene, list_transcript, list_exon):
             count_exon[transcript_id] += ",%s-%s" % (str(exon.start), str(exon.end))
         else:
             count_exon[transcript_id] = "%s-%s" % (str(exon.start), str(exon.end))
-    print("count_exon_finished")
+    print("The length of count_exon:" + str(len(count_exon.keys())))
     for transcript_id,transcript in list_transcript.items():
         gene_id = transcript.parent
         chr = transcript.chr
@@ -347,14 +348,14 @@ def gene_exon_pos1(list_gene, list_transcript, list_exon):
             count_transcript[all].append(transcript_id)
         else:
             count_transcript[all]=[]
-    print("count_transcript_finished")
+    print("The length of count_transcript:" + str(len(count_transcript.keys())))
     #print(count_transcript)
     for k1,v1 in count_transcript.items():
         gene_transcript_exon[k1]={}
         for i in v1:
             gene_transcript_exon[k1][i] = count_exon[i]                                  #这种写法只要几秒钟
             #print(k1+i)
-    #print(gene_transcript_exon)        
+    print("The length of count_transcript_exon:" + str(len(gene_transcript_exon.keys())))
     with open("gene_transcript_exon1.txt", 'w') as fp_out:
         fp_out.write("Chr"+"\t"+"Gene_Symbol"+"\t"+"Type"+"\t"+"Gene_ID"+"\t"+"Transcript_ID"+"\t"+"exon_pos"+"\t"+"exon_number"+"\n")   #加个列名
         for gene_id, transcript in gene_transcript_exon.items():
@@ -362,6 +363,59 @@ def gene_exon_pos1(list_gene, list_transcript, list_exon):
                 exon_number=len(exon_pos.split(','))    #计算exon的个数
             #print("\t".join([transcript_id, pos]) + "\n")
                 fp_out.write("\t".join([gene_id, transcript_id,exon_pos,str(exon_number)]) + "\n")
+
+
+def gene_exon_pos1_1(list_gene, list_transcript, list_exon):
+    """
+    改良版 根据exon的parent将所有exon对应到transcript
+    根据transcript的parent将所有transcript对应到gene
+    根据gene按chr分组得到chromosome列表
+
+    从chromosome中输出某个指定基因的所有外显子坐标信息并画图
+    生信编程直播第五题
+
+    :param list_gene:
+    :param list_transcript:
+    :param list_exon:
+    :return:
+    """
+    print("基因——转录本——外显子坐标统计")
+    gene_transcript_exon = {}
+    count_exon = {}
+    count_transcript = {}
+    for exon in list_exon:
+        transcript_id = exon.parent
+        if transcript_id in count_exon:
+            count_exon[transcript_id] += ",%s-%s" % (str(exon.start), str(exon.end))
+        else:
+            count_exon[transcript_id] = "%s-%s" % (str(exon.start), str(exon.end))
+    print("The length of count_exon:" + str(len(count_exon.keys())))
+    for transcript_id, transcript in list_transcript.items():
+        gene_id = transcript.parent
+        chr = transcript.chr
+        name = transcript.name
+        catag = transcript.catag
+        all = "\t".join([str(chr), name, catag, gene_id])
+        if gene_id not in count_transcript:
+            count_transcript[gene_id] = [transcript_id]
+        else:
+            count_transcript[gene_id].append(transcript_id)
+    print("The length of count_transcript:" + str(len(count_transcript.keys())))
+    # print(count_transcript)
+    for k1, v1 in count_transcript.items():
+        gene_transcript_exon[k1] = {}
+        for i in v1:
+            gene_transcript_exon[k1][i] = count_exon[i]  # 这种写法只要几秒钟
+            # print(k1+i)
+    print("The length of count_transcript_exon:" + str(len(gene_transcript_exon.keys())))
+    with open("gene_transcript_exon1_1.txt", 'w') as fp_out:
+        fp_out.write(
+            "Chr" + "\t" + "Gene_Symbol" + "\t" + "Type" + "\t" + "Gene_ID" + "\t" + "Transcript_ID" + "\t" + "exon_pos" + "\t" + "exon_number" + "\n")  # 加个列名
+        for gene_id, transcript in gene_transcript_exon.items():
+            for transcript_id, exon_pos in transcript.items():
+                exon_number = len(exon_pos.split(','))  # 计算exon的个数
+                # print("\t".join([transcript_id, pos]) + "\n")
+                fp_out.write("\t".join([gene_id, transcript_id, exon_pos, str(exon_number)]) + "\n")
 def gene_exon_pos2(list_gene, list_transcript, list_exon):
     """
     根据exon的parent将所有exon对应到transcript
@@ -386,20 +440,20 @@ def gene_exon_pos2(list_gene, list_transcript, list_exon):
             count_exon[transcript_id] += ",%s-%s" % (str(exon.start), str(exon.end))
         else:
             count_exon[transcript_id] = "%s-%s" % (str(exon.start), str(exon.end))
-    print("count_exon_finished")
+    print("The length of count_exon:" + str(len(count_exon.keys())))
     for transcript_id,transcript in list_transcript.items():
         gene_id = transcript.parent
-        if gene_id in count_transcript:
-            count_transcript[gene_id].append(transcript_id)
+        if gene_id not in count_transcript:
+            count_transcript[gene_id] = [transcript_id]
         else:
-            count_transcript[gene_id]=[]
-    print("count_transcript_finished")
+            count_transcript[gene_id].append(transcript_id)
+    print("The length of count_transcript:" + str(len(count_transcript.keys())))
     for k1,v1 in count_transcript.items():
         gene_transcript_exon[k1]={}
         for i in v1:
             if i in count_exon:
                 gene_transcript_exon[k1][i] = count_exon[i]
-    #print(gene_transcript_exon)        
+    print("The length of count_transcript_exon:" + str(len(gene_transcript_exon.keys())))
     with open("gene_transcript_exon2.txt", 'w') as fp_out:
         for gene_id, transcript in gene_transcript_exon.items():
             for transcript_id, exon_pos in transcript.items():
