@@ -65,7 +65,7 @@ def main(args):
 
             if type == "gene":  # 如果类型为基因
                 gene = Gene()  # 初始化一个基因的对象，Gene是一个类，gene是Gene类的一个实例，这个实例有5个属性
-                id = re.search(r'Dbxref=GeneID:([^;]+);?', attr).group(1)  # 在属性attr里边匹配gene_id,以gene_id,以0个或者1个;结尾，中间匹配至少一个非;字符
+                id = re.search(r'Dbxref=GeneID:(\d+);?', attr).group(1)  # 在属性attr里边匹配gene_id,以gene_id,以0个或者1个;结尾，中间匹配至少一个非;字符
                 name = re.search(r'gene=([^;]+);?', attr).group(1)
                 catag = re.search(r'gene_biotype=([^;]+);?', attr).group(1)  # 对基因的类型进行分类
                 gene.chr = chr
@@ -81,7 +81,7 @@ def main(args):
                 transcript = Transcript()
                 id = re.search(r'transcript_id=([^;]+);?', attr).group(1)
                 #print(id)
-                parent = re.search(r'Dbxref=GeneID:([^;]+);?', attr).group(1)  # 这里的gene_id就成了transcript的parent
+                parent = re.search(r'Dbxref=GeneID:(\d+);?', attr).group(1)  # 这里的gene_id就成了transcript的parent
                 name = re.search(r'gene=([^;]+);?', attr).group(1)
                 if not parent in list_gene:  # 如果这个转录本没有gene_id就不进行统计
                     continue
@@ -153,12 +153,27 @@ def gene_len(list_gene):
 
     print("基因长度分布情况")
     with open("gene_len.txt", 'w') as fp_out:
-        fp_out.write(
-            'chr' + '\t' + 'gene_id' + '\t' + 'gene_symbol' + '\t' + 'type' + '\t' + 'start' + '\t' + 'end' + '\t' + 'length' + '\n')
+        fp_out.write('chr' + '\t' + 'gene_id' + '\t' + 'gene_symbol' + '\t' + 'type' + '\t' + 'start' + '\t' + 'end' + '\t' + 'length' + '\n')
         for gene_id, info in list_gene.items():
             len = info.end - info.start + 1  # 用list_gene字典中的值gene的属性end和start
-            fp_out.write(
-                "\t".join([info.chr, gene_id, info.name, info.catag, str(info.start), str(info.end), str(len)]) + "\n")
+            fp_out.write("\t".join([info.chr, gene_id, info.name, info.catag, str(info.start), str(info.end), str(len)]) + "\n")
             # print("\t".join([gene_id, str(len)]) + "\n")
+    id_number = {}
+    with open("gene_len.txt",'r') as fp_out:
+        for line in  fp_out:
+            if line.startswith('chr'):
+                continue
+            lst = line.strip("\n").split("\t")
+            id = lst[1]
+            symbol =lst[2]
+            if symbol not in id_number:
+                id_number[symbol] = id
+            else:
+                id_number[symbol] += "| %s"%(id)
+    with open("id_number.txt",'w') as fp_out:                  #对单个symbol对应多个id进行统计
+        for symbol,number in id_number.items():
+            fp_out.write("\t".join([symbol,number]) + "\n")
+
+
 if __name__ == "__main__":
     main(args)
